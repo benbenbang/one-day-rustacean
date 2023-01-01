@@ -13,6 +13,22 @@ pub struct Request<'buf> {
     method: HttpMethod,
 }
 
+// Implement getter
+impl<'buf> Request<'buf> {
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+
+    pub fn method(&self) -> &HttpMethod {
+        &self.method
+    }
+
+    pub fn query_string(&self) -> Option<&QueryString> {
+        self.query_string.as_ref()
+    }
+}
+
+// Implement method
 impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 

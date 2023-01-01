@@ -1,10 +1,13 @@
 #![allow(dead_code, unused)]
 
+use http::handler::Handler;
 use http::HttpMethod;
 use http::Request;
+use http_handlers::WebsiteHandler;
 use server::Server;
 
 mod http;
+mod http_handlers;
 mod server;
 
 fn main() {
@@ -18,5 +21,5 @@ fn main() {
     // };
 
     let server = Server::new(addr.to_string());
-    server.run();
+    server.run(WebsiteHandler);
 }

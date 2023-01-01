@@ -1,4 +1,5 @@
 pub mod error;
+pub mod handler;
 pub mod helper;
 pub mod method;
 pub mod query_string;
