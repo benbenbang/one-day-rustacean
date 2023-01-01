@@ -4,16 +4,17 @@ use super::ParseError;
 use std::convert::TryFrom;
 use std::str;
 
-pub struct Request {
-    path: String,
-    query_string: Option<String>,
+// 'buf is the life time of `buf` in the server.rs
+pub struct Request<'buf> {
+    path: &'buf str,
+    query_string: Option<&'buf str>,
     method: HttpMethod,
 }
 
-impl TryFrom<&[u8]> for Request {
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from<'l>(buf: &'buf [u8]) -> Result<Request<'buf>, Self::Error> {
         /*
             try_from: to parse the http request string.
 
@@ -49,8 +50,7 @@ impl TryFrom<&[u8]> for Request {
             helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
 
         // Parse the protocol
-        let (protocol, request) =
-            helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
+        let (protocol, _) = helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
 
         if protocol != "HTTP/1.1" {
             return Err(ParseError::InvalidProtocol);
@@ -59,16 +59,48 @@ impl TryFrom<&[u8]> for Request {
         // after parse, we converted &str -> HttpMethod Enum
         let method: HttpMethod = method.parse()?;
 
-        let mut query_string = None;
-        match path.find('?') {
-            Some(i) => {
-                // to omit the `?`, we simply move the index to i + 1 byte
-                query_string = Some(&path[i + 1..]);
-                path = &path[..i];
-            }
-            None => {}
-        };
+        /*
+            case 1.
 
-        unimplemented!()
+                let mut query_string = None;
+                match path.find('?') {
+                    Some(i) => {
+                        // to omit the `?`, we simply move the index to i + 1 byte
+                        query_string = Some(&path[i + 1..]);
+                        path = &path[..i];
+                    }
+                    None => {}
+                };
+
+            :shrug: tedious again...
+
+            case 2.
+
+                let mut query_string = None;
+                let q = path.find("?");
+                if q.is_some() {
+                    let i = q.unwrap();
+                    query_string = Some(&path[i + 1..]);
+                    path = &path[..i]
+                }
+
+            still a bit smell even we don't need to handle `None` this time
+
+            case 3.
+            in rust, we can do pattern match + if condistion
+            so we don't need to `unwrap` (which causes panic)
+        */
+
+        let mut query_string = None;
+        if let Some(i) = path.find('?') {
+            query_string = Some(&path[i + 1..]);
+            path = &path[..i];
+        }
+
+        Ok(Self {
+            path,
+            query_string,
+            method,
+        })
     }
 }
