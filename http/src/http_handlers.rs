@@ -2,7 +2,15 @@
 
 use crate::http::{handler::Handler, response::Response, HttpMethod, Request, StatusCode};
 
-pub struct WebsiteHandler;
+pub struct WebsiteHandler {
+    pub public_path: String,
+}
+
+impl WebsiteHandler {
+    pub fn new(public_path: String) -> Self {
+        Self { public_path }
+    }
+}
 
 impl Handler for WebsiteHandler {
     fn handle_request(&mut self, requst: &Request) -> Response {
