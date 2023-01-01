@@ -1,4 +1,5 @@
 use super::method::HttpMethod;
+use super::request_helper;
 use super::ParseError;
 use std::convert::TryFrom;
 use std::str;
@@ -17,7 +18,7 @@ impl TryFrom<&[u8]> for Request {
             try_from: to parse the http request string.
 
             example:
-            // GET /search?name=abc&sort=1 HTTP/1.1
+            // GET /search?name=abc&sort=1 HTTP/1.1\r\n\n\nHeaders\n...
 
             original implemetations:
             case1: match str::from_utf8(buf).expect(&ParseError::InvalidEncoding.message()){
@@ -37,6 +38,15 @@ impl TryFrom<&[u8]> for Request {
             the `error.rs` file.
         */
         let request = str::from_utf8(buf)?;
+
+        // Parse the first verb
+        // using `variable shadowing` to overwrite the original `request`
+        let (method, request) =
+            request_helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
+
+        // Parse the path
+        let (path, request) =
+            request_helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
 
         unimplemented!()
     }
