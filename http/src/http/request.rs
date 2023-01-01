@@ -1,5 +1,5 @@
+use super::helper;
 use super::method::HttpMethod;
-use super::request_helper;
 use super::ParseError;
 use std::convert::TryFrom;
 use std::str;
@@ -42,11 +42,32 @@ impl TryFrom<&[u8]> for Request {
         // Parse the first verb
         // using `variable shadowing` to overwrite the original `request`
         let (method, request) =
-            request_helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
+            helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
 
         // Parse the path
-        let (path, request) =
-            request_helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
+        let (mut path, request) =
+            helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
+
+        // Parse the protocol
+        let (protocol, request) =
+            helper::get_next_token(request).ok_or(ParseError::InvalidRequest)?;
+
+        if protocol != "HTTP/1.1" {
+            return Err(ParseError::InvalidProtocol);
+        }
+
+        // after parse, we converted &str -> HttpMethod Enum
+        let method: HttpMethod = method.parse()?;
+
+        let mut query_string = None;
+        match path.find('?') {
+            Some(i) => {
+                // to omit the `?`, we simply move the index to i + 1 byte
+                query_string = Some(&path[i + 1..]);
+                path = &path[..i];
+            }
+            None => {}
+        };
 
         unimplemented!()
     }

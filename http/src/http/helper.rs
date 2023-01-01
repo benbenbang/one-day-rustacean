@@ -31,7 +31,7 @@ pub fn get_next_token(request: &str) -> Option<(&str, &str)> {
     */
 
     for (idx, c) in request.chars().enumerate() {
-        if c == ' ' {
+        if c == ' ' || c == '\r' {
             return Some((&request[..idx], &request[idx + 1..]));
         }
     }
