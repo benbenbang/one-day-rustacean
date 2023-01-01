@@ -15,7 +15,6 @@ fn main() {
     let addr: &str = "0.0.0.0:8080";
     let method = HttpMethod::GET;
     let default_pb_path = format!("{}/public", env!("CARGO_MANIFEST_DIR"));
-    println!("{default_pb_path}");
     let public_path = env::var("PUBLIC_PATH").unwrap_or(default_pb_path);
 
     // let req = Request {
