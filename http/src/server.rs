@@ -38,7 +38,9 @@ impl Server {
                                 2. let res: &Result<Request, _> = &buffer[..].try_info();
                             */
                             match Request::try_from(&buffer[..]) {
-                                Ok(request) => {}
+                                Ok(request) => {
+                                    dbg!(request)
+                                }
                                 Err(e) => panic!("Faild to parse request: {}", e),
                             };
                         }
