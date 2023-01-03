@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "f_structs_traits"
+name = "structs_traits"
 version = "0.1.0"
